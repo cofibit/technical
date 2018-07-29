@@ -16,6 +16,6 @@ def test_load_ticker():
     assert len(ticker) == 100
     days = datetime.datetime.today() - datetime.timedelta(days=10)
 
-    ticker = load_data("BTC/USD", "4h", from_date=days.timestamp(), ccxt_api="bitmex", force=False)
+    ticker = load_data("BTC/USD", "1h", from_date=days.timestamp(), ccxt_api="bitmex", force=False)
     print(len(ticker))
-    assert len(ticker) == 60
+    assert len(ticker) == 240
