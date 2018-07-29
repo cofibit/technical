@@ -3,10 +3,10 @@ import datetime
 
 
 def test_load_ticker():
-    ticker = load_ticker("USDT", "ETH")
+    ticker = load_ticker("BTC/USD")
 
     assert ticker is not None
-    ticker = load_ticker("USDT", "ALCAS")
+    ticker = load_ticker("BTC/USD")
     assert ticker is None
 
 
@@ -14,7 +14,7 @@ def test_historical_data():
     days = datetime.datetime.today() - datetime.timedelta(days=7)
     print(days)
     data = historical_data(
-        "USDT", "BNB", "1d", days.timestamp())
+        "BTC/USD", "1d", days.timestamp())
 
     assert len(data) == 7
 
@@ -24,7 +24,7 @@ def test_historical_data_ploniex():
     days = datetime.datetime.today() - datetime.timedelta(days=90)
 
     data = historical_data(
-        "BTC", "ETH", "1d", days.timestamp(), "poloniex")
+        "BTC/USD", "1d", days.timestamp(), "bitmex")
 
     assert len(data) == 90
 
@@ -34,6 +34,6 @@ def test_historical_data_ploniex_long():
     days = datetime.datetime.today() - datetime.timedelta(days=365)
 
     data = historical_data(
-        "BTC", "ETC", "1d", days.timestamp(), "poloniex")
+        "BTC/USD", "1d", days.timestamp(), "bitmex")
 
     assert len(data) == 365

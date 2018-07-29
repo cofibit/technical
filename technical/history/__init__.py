@@ -26,7 +26,7 @@ def init():
     _DECL_BASE.metadata.create_all(engine)
 
 
-def load_data(pair, interval, from_date=0, ccxt_api="poloniex", force=False,
+def load_data(pair, interval, from_date=0, ccxt_api="bitmex", force=False,
               till_date=datetime.datetime.now().timestamp(), days=None):
     """
         this method will try to load historical ticker data for the specified attribute
@@ -53,15 +53,11 @@ def load_data(pair, interval, from_date=0, ccxt_api="poloniex", force=False,
     from technical.exchange import _create_exchange, historical_data
     ccxt_api = _create_exchange(ccxt_api)
 
-    pair = pair.upper().split("/")
-    stake = pair[1]
-    asset = pair[0]
-
     # get newest data from the internal store for this pair
 
     latest_time = OHLCV.session.query(func.max(OHLCV.timestamp)).filter(
         OHLCV.exchange == ccxt_api.name,
-        OHLCV.pair == "{}/{}".format(asset.upper(), stake.upper()),
+        OHLCV.pair == "{}".format(pair.upper()),
         OHLCV.interval == interval
     ).one()[0]
 
@@ -73,11 +69,11 @@ def load_data(pair, interval, from_date=0, ccxt_api="poloniex", force=False,
     if latest_time is None:
 
         # store data for all
-        for row in historical_data(stake, asset, interval, from_date, ccxt_api):
+        for row in historical_data(pair, interval, from_date, ccxt_api):
             o = OHLCV(
-                id="{}-{}-{}/{}:{}".format(ccxt_api.name, interval, asset.upper(), stake.upper(), row[0]),
+                id="{}-{}-{}:{}".format(ccxt_api.name, interval, pair.upper(), row[0]),
                 exchange=ccxt_api.name,
-                pair="{}/{}".format(asset.upper(), stake.upper()),
+                pair="{}".format(pair.upper()),
                 interval=interval,
                 open=row[1],
                 close=row[4],
@@ -91,11 +87,11 @@ def load_data(pair, interval, from_date=0, ccxt_api="poloniex", force=False,
     else:
         # calculate the difference in days and download and merge the data files
 
-        for row in historical_data(stake, asset, interval, latest_time, ccxt_api):
+        for row in historical_data(pair, interval, latest_time, ccxt_api):
             o = OHLCV(
-                id="{}-{}-{}/{}:{}".format(ccxt_api.name, interval, asset.upper(), stake.upper(), row[0]),
+                id="{}-{}-{}:{}".format(ccxt_api.name, interval, pair.upper(), row[0]),
                 exchange=ccxt_api.name,
-                pair="{}/{}".format(asset.upper(), stake.upper()),
+                pair="{}".format(pair.upper()),
                 interval=interval,
                 open=row[1],
                 close=row[4],
@@ -112,7 +108,7 @@ def load_data(pair, interval, from_date=0, ccxt_api="poloniex", force=False,
     # filter by exchange, currency and other pairs
     for row in OHLCV.session.query(OHLCV).filter(
             OHLCV.exchange == ccxt_api.name,
-            OHLCV.pair == "{}/{}".format(asset.upper(), stake.upper()),
+            OHLCV.pair == "{}".format(pair.upper()),
             OHLCV.interval == interval,
             OHLCV.timestamp >= from_date * 1000,
             OHLCV.timestamp <= till_date * 1000,

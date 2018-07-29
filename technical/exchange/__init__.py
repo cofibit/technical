@@ -10,39 +10,29 @@ logger = logging.getLogger(__name__)
 TICKER_INTERVAL_MINUTES = {
     '1m': 1,
     '5m': 5,
-    '15m': 15,
-    '30m': 30,
     '1h': 60,
-    '60m': 60,
-    '2h': 120,
-    '4h': 240,
-    '6h': 360,
-    '12h': 720,
     '1d': 1440,
-    '1w': 10080,
 }
 
 
-def load_ticker(stake, asset, ccxt_api=None):
+def load_ticker(pair, ccxt_api=None):
     """
         this loads the ticker for the given stake and asset. If an ccxt exchange is provided we will loose it,
         otherwise we just going to create an internal exchange object
 
-    :param stake:
-    :param asset:
-    :param ccxt_api:
+    :param pair: XBTUSD
+    :param ccxt_api: bitmex
     :return:
     """
 
     ccxt_api = _create_exchange(ccxt_api)
 
-    ticker = ccxt_api.fetch_tickers()
+    pair = "{}".format(pair.upper())
 
-    asset = asset.upper()
-    stake = stake.upper()
+    ticker = ccxt_api.fetch_ticker(pair)
 
-    if "{}/{}".format(asset, stake) in ticker:
-        return ticker["{}/{}".format(asset, stake)]
+    if pair in ticker:
+        return ticker[pair]
     else:
         return None
 
@@ -50,32 +40,25 @@ def load_ticker(stake, asset, ccxt_api=None):
 def _create_exchange(ccxt_api):
     if ccxt_api is None:
         # create new exchange object to fetch data
-        return getattr(ccxt, "binance")({
+        return getattr(ccxt, "bitmex")({
             'apiKey': "",
             'secret': "",
-            'password': "",
-            'uid': "",
             'enableRateLimit': True,
         })
     elif isinstance(ccxt_api, str):
         return getattr(ccxt, ccxt_api)({
             'apiKey': "",
             'secret': "",
-            'password': "",
-            'uid': "",
             'enableRateLimit': True,
         })
     else:
         return ccxt_api
 
 
-def historical_data(stake, currency, interval, from_date=0, ccxt_api=None, days=None):
+def historical_data(pair, interval, from_date=0, ccxt_api=None, days=None):
     """
 
-    :param stake: the stake currency, like USDT, BTC, ETH
-    :param currency: the currency of choice, for example ETH
-
-    these two will form your trade pair!
+    :param pair: symbol to trade i.e. XBTUSD
 
     :param interval: your desired interval in minutes,
 
@@ -88,7 +71,7 @@ def historical_data(stake, currency, interval, from_date=0, ccxt_api=None, days=
     if days:
         from_date = (datetime.today() - timedelta(days=days)).timestamp()
 
-    pair = "{}/{}".format(currency.upper(), stake.upper())
+    pair = "{}".format(pair.upper())
 
     ccxt_api = _create_exchange(ccxt_api)
 
